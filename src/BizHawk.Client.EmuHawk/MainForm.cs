@@ -88,6 +88,9 @@ namespace BizHawk.Client.EmuHawk
 				setLibretroCoreToolStripMenuItem
 			});
 			CoresSubMenu.DropDownOpened += (openedSender, openedArgs) => GBInSGBMenuItem.Checked = Config.GbAsSgb;
+			ToolStripButton tsbVeldridSandbox = new() { Text = "VeldridDemo" };
+			tsbVeldridSandbox.Click += (_, _) => this.ShowDialogAsChild(new VeldridSandbox());
+			MainMenuStrip.Items.Add(tsbVeldridSandbox);
 
 			// Hide Status bar icons and general StatusBar prep
 			MainStatusBar.Padding = new Padding(MainStatusBar.Padding.Left, MainStatusBar.Padding.Top, MainStatusBar.Padding.Left, MainStatusBar.Padding.Bottom); // Workaround to remove extra padding on right
