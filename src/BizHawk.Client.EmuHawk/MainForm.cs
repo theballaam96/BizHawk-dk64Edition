@@ -1574,8 +1574,11 @@ namespace BizHawk.Client.EmuHawk
 		private readonly double _fpsUpdatesPerSecond = 4.0;
 		private readonly double _fpsSmoothing = 8.0;
 		private double _lastFps;
+		private int _lastFpsRounded;
 		private int _framesSinceLastFpsUpdate;
 		private long _timestampLastFpsUpdate;
+
+		public int GetApproxFramerate() => _lastFpsRounded;
 
 		private readonly Throttle _throttle;
 		private bool _unthrottled;
@@ -3078,7 +3081,7 @@ namespace BizHawk.Client.EmuHawk
 				{
 					_framesSinceLastFpsUpdate++;
 
-					UpdateFpsDisplay(currentTimestamp, isRewinding, isFastForwarding);
+					CalcFramerateAndUpdateDisplay(currentTimestamp, isRewinding, isFastForwarding);
 				}
 
 				if (Tools.IsLoaded<TAStudio>() &&
@@ -3116,7 +3119,7 @@ namespace BizHawk.Client.EmuHawk
 			Sound.UpdateSound(atten, DisableSecondaryThrottling);
 		}
 
-		private void UpdateFpsDisplay(long currentTimestamp, bool isRewinding, bool isFastForwarding)
+		private void CalcFramerateAndUpdateDisplay(long currentTimestamp, bool isRewinding, bool isFastForwarding)
 		{
 			double elapsedSeconds = (currentTimestamp - _timestampLastFpsUpdate) / (double)Stopwatch.Frequency;
 
@@ -3133,11 +3136,12 @@ namespace BizHawk.Client.EmuHawk
 			{
 				_lastFps = (_lastFps + (_framesSinceLastFpsUpdate * _fpsSmoothing)) / (1.0 + (elapsedSeconds * _fpsSmoothing));
 			}
+			_lastFpsRounded = (int) Math.Round(_lastFps);
 
 			_framesSinceLastFpsUpdate = 0;
 			_timestampLastFpsUpdate = currentTimestamp;
 
-			var fpsString = $"{_lastFps:0} fps";
+			var fpsString = $"{_lastFpsRounded} fps";
 			if (isRewinding)
 			{
 				fpsString += IsTurboing || isFastForwarding ?
@@ -3162,7 +3166,7 @@ namespace BizHawk.Client.EmuHawk
 
 		private void InitializeFpsData()
 		{
-			_lastFps = 0;
+			_lastFps = _lastFpsRounded = 0;
 			_timestampLastFpsUpdate = Stopwatch.GetTimestamp();
 			_framesSinceLastFpsUpdate = 0;
 		}
