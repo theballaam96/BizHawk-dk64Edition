@@ -19,7 +19,7 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
 	{
 		private readonly LibSnes9x _core;
 
-		[CoreConstructor("SNES")]
+		// [CoreConstructor("SNES")]
 		public Snes9x(CoreComm comm, byte[] rom, Settings settings, SyncSettings syncSettings)
 			:base(comm, new Configuration
 			{

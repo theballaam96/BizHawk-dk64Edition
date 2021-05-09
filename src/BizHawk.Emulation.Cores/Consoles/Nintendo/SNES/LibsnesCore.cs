@@ -29,8 +29,8 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES
 	public unsafe partial class LibsnesCore : IEmulator, IVideoProvider, ISaveRam, IStatable, IInputPollable, IRegionable, ICodeDataLogger,
 		IDebuggable, ISettable<LibsnesCore.SnesSettings, LibsnesCore.SnesSyncSettings>
 	{
-		[CoreConstructor("SGB")]
-		[CoreConstructor("SNES")]
+		// [CoreConstructor("SGB")]
+		// [CoreConstructor("SNES")]
 		public LibsnesCore(GameInfo game, byte[] rom, CoreComm comm,
 			LibsnesCore.SnesSettings settings, LibsnesCore.SnesSyncSettings syncSettings)
 			:this(game, rom, null, null, comm, settings, syncSettings)
