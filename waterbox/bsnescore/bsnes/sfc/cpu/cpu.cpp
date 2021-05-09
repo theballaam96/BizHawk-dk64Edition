@@ -56,6 +56,9 @@ auto CPU::main() -> void {
   }
 
   status.interruptPending = 0;
+
+  if (platform->traceEnabled)
+    platform->notify(disassemble());
 }
 
 auto CPU::load() -> bool {

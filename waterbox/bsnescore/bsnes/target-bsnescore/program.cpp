@@ -280,6 +280,8 @@ auto Program::notify(string message) -> void
 	// TODO: This is probably not necessary this way; checking whether inputPoll is called is probably enough
 	if (message == "NOTIFY NO_LAG")
 		snes_no_lag();
+	else
+		snes_trace(message.data());
 }
 
 auto Program::getBackdropColor() -> uint16

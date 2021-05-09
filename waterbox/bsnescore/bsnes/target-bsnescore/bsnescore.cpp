@@ -11,8 +11,6 @@ using namespace SuperFamicom;
 
 uint16_t backdropColor;
 
-// snes_trace_t ptrace;
-
 // //zero 27-sep-2012
 // snes_scanlineStart_t pScanlineStart;
 // void scanlineStart(int line)
@@ -20,33 +18,8 @@ uint16_t backdropColor;
 // 	if(pScanlineStart) pScanlineStart((int)line);
 // }
 
-// void cpuTrace(uint32_t which, const char *msg) {
-// 	if (ptrace)
-// 		ptrace(which, (const char *)msg);
-// }
-
-// //zero 23-dec-2012
-// void* allocSharedMemory(const char* memtype, size_t amt, int initialByte = -1)
-// {
-// 	void* ret;
-// 	ret = snes_allocSharedMemory(memtype,amt);
-// 	if(initialByte != -1)
-// 	{
-// 		for(unsigned i = 0; i < amt; i++) ((uint8*)ret)[i] = (uint8)initialByte;
-// 	}
-// 	return ret;
-// }
-// void freeSharedMemory(void* ptr)
-// {
-// 	snes_freeSharedMemory(ptr);
-// }
 
 #include "program.cpp"
-
-// if ever used from inside bsnes should probably go through platform->allocSharedMemory
-// void* extern_allocSharedMemory(const char* memtype, size_t amt, int initialByte = -1) {
-//     return iface->allocSharedMemory(memtype, amt, initialByte);
-// }
 
 //zero 21-sep-2012
 // void snes_set_scanlineStart(snes_scanlineStart_t cb)
@@ -56,6 +29,7 @@ uint16_t backdropColor;
 
 
 //zero 05-sep-2012
+// currently unused; was only used in the graphics debugger as far as i can see
 int snes_peek_logical_register(int reg)
 {
     if (emulator->configuration("Hacks/PPU/Fast") == "true")
@@ -313,7 +287,7 @@ snes_no_lag_t snes_no_lag;
 snes_video_frame_t snes_video_frame;
 snes_audio_sample_t snes_audio_sample;
 snes_path_request_t snes_path_request;
-// snes_trace_t snes_trace;
+snes_trace_t snes_trace;
 
 EXPORT void snes_set_callbacks(
   snes_input_poll_t input_poll_cb,
@@ -332,6 +306,11 @@ EXPORT void snes_set_callbacks(
     snes_audio_sample = audio_sample_cb;
     snes_path_request = path_request_cb;
     // snes_trace = trace_cb;
+}
+
+EXPORT void snes_set_callbacks2(snes_trace_t trace_cb)
+{
+    snes_trace = trace_cb;
 }
 
 // TODO: frontend does not differenciate the bgN's prio0 and prio1. They should either be removed or supported individually
@@ -442,4 +421,10 @@ EXPORT uint8_t snes_bus_read(unsigned addr) {
 }
 EXPORT void snes_bus_write(unsigned addr, uint8_t value) {
     bus.write(addr, value);
+}
+
+
+EXPORT void snes_set_trace_enabled(bool enabled)
+{
+    platform->traceEnabled = enabled;
 }
