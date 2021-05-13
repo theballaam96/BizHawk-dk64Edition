@@ -54,6 +54,8 @@ namespace BizHawk.Emulation.Cores.Nintendo.N64
 				_disableExpansionSlot = false;
 				IsOverridingUserExpansionSlotSetting = true;
 			}
+			_disableExpansionSlot = false;
+			IsOverridingUserExpansionSlotSetting = true;
 
 			byte country_code = file[0x3E];
 			switch (country_code)
