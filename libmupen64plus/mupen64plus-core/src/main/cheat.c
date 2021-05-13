@@ -220,10 +220,12 @@ void cheat_apply_cheats(int entry)
             execute_cheat(0x816170AE, 0x0000, NULL);
         }
     }
+    if (entry == ENTRY_VI) {
 	// DK64 USA - Assumed ROM Hack
         execute_cheat(0x8161963C, 0x0000, NULL);
         execute_cheat(0x8161963E, 0x0000, NULL);
-
+    }
+	    
     // If game is DK64 Kiosk, apply bone displacement fix
     if (strncmp((char *)ROM_HEADER.Name, "D K DISPLAY", 11) == 0 && entry == ENTRY_VI) {
         if (sl(ROM_HEADER.CRC1) == 0x0DD4ABAB && sl(ROM_HEADER.CRC2) == 0xB5A2A91E) {
