@@ -1,48 +1,8 @@
-BizHawk is a multi-system emulator written in C#. BizHawk provides nice features for casual gamers such as fullscreen, rewind, and joypad support in addition to rerecording and debugging tools for all system cores.
+# What is "BizHawk - DK64 Edition"
+BizHawk - DK64 Edition is a modification of BizHawk 1.13.2 to work with Donkey Kong 64 ROM Hacks automatically. This fixes some critical bugs that cannot otherwise be fixed with ROM Hacking.
 
-[Release Notes](http://tasvideos.org/Bizhawk/ReleaseHistory.html)
+# Can I TAS DK64 with this?
+Whilst yes, you can. I would advise otherwise. This isn't normal BizHawk and whilst your TAS should operate as expected when converted to normal BizHawk, such a thing cannot be confirmed for your TAS.
 
-[Here](http://tasvideos.org/Bizhawk/Features.html) is a list of features offered by bizhawk.
-
-## Download Binaries
-
-Windows users, don't forget to run the [prereq installer](http://github.com/TASVideos/BizHawk-Prereqs/releases) first!
-
-Release binaries can be found on [on github](http://github.com/TASVideos/BizHawk/releases)
-
-[Developer build](https://ci.appveyor.com/project/zeromus/bizhawk-udexo/build/artifacts) of the most recent commit
-
-## Supported Systems
-
- * Nintendo Entertainment System / Famicom / Famicom Disk System (NES/FDS)
- * Super Nintendo (SNES)
- * Nintendo 64
- * Game Boy, Game Boy Color, and Super Game Boy
- * Game Boy Advance
- * Sony PlayStation
- * Sega Master System, Game Gear, and SG-1000
- * Sega Genesis / Sega-CD
- * Sega Saturn
- * PC-Engine (TurboGrafx-16) / CD-ROM & SuperGrafx 
- * Atari 2600
- * Atari 7800
- * Atari Lynx
- * ColecoVision
- * TI-83 Calculator
- * Wonderswan and Wonderswan Color 
- * Apple II
-
-## Resources
-
-[BizHawk homepage](http://tasvideos.org/Bizhawk.html) 
-
-[FAQ](http://tasvideos.org/Bizhawk/FAQ.html) - Frequently Asked Questions / Troubleshooting
-
-[Compiling](http://tasvideos.org/Bizhawk/Compiling.html) - What is needed to compile BizHawk src
-
-[CompactDiscInfoDump](http://tasvideos.org/Bizhawk/CompactDiscInfoDump.html) - A concise explanation of compact disc CDs, gathered for the first time EVER in one location, and mostly inaccurate
-
-[Rerecording](http://tasvideos.org/Bizhawk/Rerecording.html) - (Work in progress) - Documentation of the rerecording implementation of  BizHawk
- * [TAS movie file format](http://tasvideos.org/Bizhawk/TASFormat.html) - Mnemonic patterns for each platform for .tas (input) files.
-
-[Commandline](http://tasvideos.org/Bizhawk/CommandLine.html) - Documentation of the command line options in BizHawk 
+# Can I play other games with this?
+I would advise using normal BizHawk as opposed to this.
