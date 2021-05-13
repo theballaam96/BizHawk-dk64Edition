@@ -507,6 +507,7 @@ namespace BizHawk.Emulation.Cores.Nintendo.N64.NativeApi
 			this.bizhawkCore = bizhawkCore;
 
 			CoreDll = LoadLibrary("mupen64plus.dll");
+			Console.WriteLine(GetLastError());
 			if (CoreDll == IntPtr.Zero)
 				throw new InvalidOperationException(string.Format("Failed to load mupen64plus.dll"));
 

@@ -32,7 +32,7 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES
 						int index = comm->index;
 						int id = (int)comm->id;
 						if (input_state != null)
-							comm->value = input_state(port, device, index, id);
+							comm->value = (uint)input_state(port, device, index, id);
 						break;
 					}
 				case eMessage.eMessage_SIG_input_notify:
@@ -65,13 +65,13 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES
 						string ret = hint;
 						if (pathRequest != null)
 						  hint = pathRequest(slot, hint);
-						SetAscii(hint);
+						CopyAscii(0, hint);
 						break;
 					}
 				case eMessage.eMessage_SIG_trace_callback:
 					{
 						if (traceCallback != null)
-							traceCallback(comm->GetAscii());
+							traceCallback(comm->value, comm->GetAscii());
 						break;
 					}
 				case eMessage.eMessage_SIG_allocSharedMemory:
@@ -109,7 +109,7 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES
 
 						comm->ptr = smb.Ptr;
 						SharedMemoryBlocks[smb.Name] = smb;
-						CopyString(smb.BlockName);
+						CopyAscii(0, smb.BlockName);
 						break;
 					}
 				case eMessage.eMessage_SIG_freeSharedMemory:

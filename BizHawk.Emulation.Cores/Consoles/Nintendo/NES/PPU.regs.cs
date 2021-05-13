@@ -309,6 +309,7 @@ namespace BizHawk.Emulation.Cores.Nintendo.NES
 		public Reg_2000 reg_2000;
 		public Reg_2001 reg_2001;
 		byte reg_2003;
+
 		void regs_reset()
 		{
 			//TODO - would like to reconstitute the entire PPU instead of all this..
@@ -396,12 +397,6 @@ namespace BizHawk.Emulation.Cores.Nintendo.NES
 			return (byte)((Reg2002_vblank_active << 7) | (Reg2002_objhit << 6) | (Reg2002_objoverflow << 5) | (ppu_open_bus & 0x1F));
 		}
 
-		void clear_2002()
-		{
-			Reg2002_objhit = Reg2002_objoverflow = 0;
-			Reg2002_vblank_clear_pending = true;
-		}
-
 		//OAM ADDRESS (write)
 		void write_2003(int addr, byte value)
 		{
@@ -438,44 +433,44 @@ namespace BizHawk.Emulation.Cores.Nintendo.NES
 			reg_2003++;
 		}
 		byte read_2004()
-        {
+		{
 			byte ret;
 			// behaviour depends on whether things are being rendered or not
-            if (PPUON)
-            {
-                if (ppur.status.sl < 241)
-                {
+			if (PPUON)
+			{
+				if (ppur.status.sl < 241)
+				{
 					if (ppur.status.cycle <= 64)
-                    {
-                        ret = 0xFF; // during this time all reads return FF
-                    }
-                    else if (ppur.status.cycle <= 256)
-                    {
-                        ret = read_value;
-                    }
-                    else if (ppur.status.cycle <= 320)
-                    {
-                        ret = read_value;
-                    }
-                    else
-                    {
-                        ret = soam[0];
-                    }
-                }
-                else
-                {
-                    ret = OAM[reg_2003];
-                }
-            }
-            else
-            {
-                ret = OAM[reg_2003];
+					{
+						ret = 0xFF; // during this time all reads return FF
+					}
+					else if (ppur.status.cycle <= 256)
+					{
+						ret = read_value;
+					}
+					else if (ppur.status.cycle <= 320)
+					{
+						ret = read_value;
+					}
+					else
+					{
+						ret = soam[0];
+					}
+				}
+				else
+				{
+					ret = OAM[reg_2003];
+				}
+			}
+			else
+			{
+				ret = OAM[reg_2003];
 			}
 
 			ppu_open_bus = ret;
 			ppu_open_bus_decay(1);
 			return ret;
-        }
+		}
 		byte peek_2004() { return OAM[reg_2003]; }
 
 		//SCROLL (write)

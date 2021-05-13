@@ -86,7 +86,7 @@ namespace BizHawk.Client.MultiHawk
 			//CoreFileProvider.SyncCoreCommInputSignals();
 
 			Global.ActiveController = new Controller(NullController.Instance.Definition);
-			Global.AutoFireController = Global.AutofireNullControls;
+			Global.AutoFireController = AutofireNullControls;
 			Global.AutofireStickyXORAdapter.SetOnOffPatternFromConfig();
 
 			Closing += (o, e) =>
@@ -149,7 +149,7 @@ namespace BizHawk.Client.MultiHawk
 		}
 
 		public EmulatorWindowList EmulatorWindows = new EmulatorWindowList();
-
+		private AutofireController AutofireNullControls;
 		private bool _exit;
 
 		protected override void OnClosed(EventArgs e)
@@ -199,7 +199,7 @@ namespace BizHawk.Client.MultiHawk
 			}
 
 			Global.ClientControls = controls;
-			Global.AutofireNullControls = new AutofireController(NullController.Instance.Definition, Emulator);
+			AutofireNullControls = new AutofireController(NullController.Instance.Definition, Emulator);
 		}
 
 		private void OpenRomMenuItem_Click(object sender, EventArgs e)
@@ -330,8 +330,8 @@ namespace BizHawk.Client.MultiHawk
 					TopLevel = false,
 					Text = Path.GetFileNameWithoutExtension(StripArchivePath(path)),
 					Emulator = loader.LoadedEmulator,
-
 					GL = new Bizware.BizwareGL.Drivers.OpenTK.IGL_TK(2,0,false),
+					//GL = new Bizware.BizwareGL.Drivers.SlimDX.IGL_SlimDX9(),
 					GLManager = GLManager.Instance,
 					Game = loader.Game,
 					CurrentRomPath = loader.CanonicalFullPath
@@ -372,6 +372,7 @@ namespace BizHawk.Client.MultiHawk
 				if (EmulatorWindows.Count == 1)
 				{
 					Emulator = ew.Emulator;
+					ViewSubMenu.Enabled = true;
 				}
 
 				_inputManager.SyncControls();
@@ -921,7 +922,7 @@ namespace BizHawk.Client.MultiHawk
 		public bool EmulatorPaused = true;
 		private readonly BizHawk.Client.EmuHawk.Throttle _throttle;
 		//private bool _unthrottled; // TODO
-		private bool _runloopFrameadvance;
+		private bool _runloopFrameAdvance;
 		private bool _runloopFrameProgress;
 		private long _frameAdvanceTimestamp;
 		private bool _runloopLastFf;
@@ -955,7 +956,7 @@ namespace BizHawk.Client.MultiHawk
 			Global.DisableSecondaryThrottling = /*_unthrottled || TODO */ turbo || fastForward;
 
 			// realtime throttle is never going to be so exact that using a double here is wrong
-			_throttle.SetCoreFps(EmulatorWindows.Master.Emulator.CoreComm.VsyncRate);
+			_throttle.SetCoreFps(EmulatorWindows.Master.Emulator.VsyncRate());
 			_throttle.signal_paused = EmulatorPaused;
 			_throttle.signal_unthrottle = /*_unthrottled || TODO */ turbo;
 			_throttle.signal_overrideSecondaryThrottle = fastForward && (Global.Config.SoundThrottle || Global.Config.VSyncThrottle || Global.Config.VSync);
@@ -965,8 +966,8 @@ namespace BizHawk.Client.MultiHawk
 		private void StepRunLoop_Throttle()
 		{
 			SyncThrottle();
-			_throttle.signal_frameAdvance = _runloopFrameadvance;
-			_throttle.signal_continuousframeAdvancing = _runloopFrameProgress;
+			_throttle.signal_frameAdvance = _runloopFrameAdvance;
+			_throttle.signal_continuousFrameAdvancing = _runloopFrameProgress;
 
 			_throttle.Step(true, -1);
 		}
@@ -986,7 +987,7 @@ namespace BizHawk.Client.MultiHawk
 		private void StepRunLoop_Core()
 		{
 			var runFrame = false;
-			_runloopFrameadvance = false;
+			_runloopFrameAdvance = false;
 			var currentTimestamp = Stopwatch.GetTimestamp();
 			double frameAdvanceTimestampDeltaMs = (double)(currentTimestamp - _frameAdvanceTimestamp) / Stopwatch.Frequency * 1000.0;
 			bool frameProgressTimeElapsed = frameAdvanceTimestampDeltaMs >= Global.Config.FrameProgressDelayMs;
@@ -998,7 +999,7 @@ namespace BizHawk.Client.MultiHawk
 				{
 					PauseEmulator();
 					runFrame = true;
-					_runloopFrameadvance = true;
+					_runloopFrameAdvance = true;
 					_frameAdvanceTimestamp = currentTimestamp;
 				}
 				else
@@ -1289,6 +1290,7 @@ namespace BizHawk.Client.MultiHawk
 				else
 				{
 					Emulator = null;
+					ViewSubMenu.Enabled = false;
 				}
 			}
 		}

@@ -122,7 +122,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationFramework" />
     <Reference Include="SlimDX, Version=4.0.10.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\$(Platform)\SlimDX.dll</HintPath>
@@ -373,6 +372,12 @@
     <Compile Include="config\ColecoVision\ColecoControllerSettings.Designer.cs">
       <DependentUpon>ColecoControllerSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="config\A7800\A7800ControllerSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="config\A7800\A7800ControllerSettings.Designer.cs">
+      <DependentUpon>A7800ControllerSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="config\INTV\IntvControllerSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -506,6 +511,12 @@
     <Compile Include="config\SMS\SMSGraphicsConfig.Designer.cs">
       <DependentUpon>SMSGraphicsConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="config\SNES\SNESControllerConfig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="config\SNES\SNESControllerConfig.Designer.cs">
+      <DependentUpon>SNESControllerConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="config\SNES\SNESOptions.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -604,9 +615,7 @@
     <Compile Include="CustomControls\ViewportPanel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="CustomControls\VirtualListView.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="CustomControls\VirtualListView.cs" />
     <Compile Include="CustomControls\Win32.cs" />
     <Compile Include="DisplayManager\DisplayManager.cs" />
     <Compile Include="DisplayManager\DisplaySurface.cs" />
@@ -1193,6 +1202,7 @@
     </Compile>
     <Compile Include="tools\VirtualPads\schema\A26Schema.cs" />
     <Compile Include="tools\VirtualPads\schema\A78Schema.cs" />
+    <Compile Include="tools\VirtualPads\schema\A7800HawkSchema.cs" />
     <Compile Include="tools\VirtualPads\schema\AppleIISchema.cs" />
     <Compile Include="tools\VirtualPads\schema\C64Schema.cs" />
     <Compile Include="tools\VirtualPads\schema\ColecoSchema.cs" />
@@ -1335,6 +1345,9 @@
     <EmbeddedResource Include="config\ColecoVision\ColecoControllerSettings.resx">
       <DependentUpon>ColecoControllerSettings.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="config\A7800\A7800ControllerSettings.resx">
+      <DependentUpon>A7800ControllerSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="config\INTV\IntvControllerSettings.resx">
       <DependentUpon>IntvControllerSettings.cs</DependentUpon>
     </EmbeddedResource>
@@ -1397,6 +1410,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="config\SMS\SMSGraphicsConfig.resx">
       <DependentUpon>SMSGraphicsConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="config\SNES\SNESControllerConfig.resx">
+      <DependentUpon>SNESControllerConfig.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="config\SNES\SNESOptions.resx">
       <DependentUpon>SNESOptions.cs</DependentUpon>

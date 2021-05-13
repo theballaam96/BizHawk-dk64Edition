@@ -1,31 +1,25 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using BizHawk.Emulation.Common;
-using System.Collections.Generic;
 
 namespace BizHawk.Client.Common
 {
 	public class Bk2LogEntryGenerator : ILogEntryGenerator
 	{
-		private readonly Bk2MnemonicConstants Mnemonics = new Bk2MnemonicConstants();
-		private readonly Bk2FloatConstants FloatLookup = new Bk2FloatConstants();
+		private readonly Bk2MnemonicConstants _mnemonics = new Bk2MnemonicConstants();
+		private readonly Bk2FloatConstants _floatLookup = new Bk2FloatConstants();
 
+		private readonly string _logKey;
 		private IController _source;
-		private readonly string _logKey = string.Empty;
 
 		public Bk2LogEntryGenerator(string logKey)
 		{
 			_logKey = logKey;
 		}
 
-		public IMovieController MovieControllerAdapter
-		{
-			get
-			{
-				return new Bk2ControllerAdapter(_logKey);
-			}
-		}
+		public IMovieController MovieControllerAdapter => new Bk2ControllerAdapter(_logKey);
 
 		#region ILogEntryGenerator Implementation
 
@@ -39,21 +33,9 @@ namespace BizHawk.Client.Common
 			return CreateLogEntry(forInputDisplay: true);
 		}
 
-		public bool IsEmpty
-		{
-			get
-			{
-				return EmptyEntry == GenerateLogEntry();
-			}
-		}
+		public bool IsEmpty => EmptyEntry == GenerateLogEntry();
 
-		public string EmptyEntry
-		{
-			get
-			{
-				return CreateLogEntry(createEmpty: true);
-			}
-		}
+		public string EmptyEntry => CreateLogEntry(createEmpty: true);
 
 		public string GenerateLogEntry()
 		{
@@ -90,11 +72,11 @@ namespace BizHawk.Client.Common
 				{
 					if (_source.Definition.BoolButtons.Contains(button))
 					{
-						dict.Add(button, Mnemonics[button].ToString());
+						dict.Add(button, _mnemonics[button].ToString());
 					}
 					else if (_source.Definition.FloatControls.Contains(button))
 					{
-						dict.Add(button, FloatLookup[button]);
+						dict.Add(button, _floatLookup[button]);
 					}
 				}
 			}
@@ -107,7 +89,9 @@ namespace BizHawk.Client.Common
 			var sb = new StringBuilder();
 
 			if (!forInputDisplay)
+			{
 				sb.Append('|');
+			}
 
 			foreach (var group in _source.Definition.ControlsOrdered)
 			{
@@ -131,9 +115,13 @@ namespace BizHawk.Client.Common
 							}
 
 							if (forInputDisplay && val == mid)
+							{
 								sb.Append("      ");
+							}
 							else
+							{
 								sb.Append(val.ToString().PadLeft(5, ' ')).Append(',');
+							}
 						}
 						else if (_source.Definition.BoolButtons.Contains(button))
 						{
@@ -143,13 +131,15 @@ namespace BizHawk.Client.Common
 							}
 							else
 							{
-								sb.Append(_source.IsPressed(button) ? Mnemonics[button] : forInputDisplay ? ' ' : '.');
+								sb.Append(_source.IsPressed(button) ? _mnemonics[button] : forInputDisplay ? ' ' : '.');
 							}
 						}
 					}
 
 					if (!forInputDisplay)
+					{
 						sb.Append('|');
+					}
 				}
 			}
 

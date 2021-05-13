@@ -115,7 +115,9 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 			bk2.SaveRam = old.SaveRam;
 
 			if (!backup)
+			{
 				bk2.Save();
+			}
 
 			return bk2;
 		}
@@ -142,8 +144,7 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 				}
 			}
 
-			TasMovie tas = new TasMovie(newFilename, true);
-			tas.BinarySavestate = savestate;
+			var tas = new TasMovie(newFilename, true) { BinarySavestate = savestate };
 			tas.ClearLagLog();
 
 			var entries = old.GetLogEntries();
@@ -185,7 +186,9 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 			foreach (TasMovieMarker marker in old.Markers)
 			{
 				if (marker.Frame > frame)
+				{
 					tas.Markers.Add(new TasMovieMarker(marker.Frame - frame, marker.Message));
+				}
 			}
 
 			tas.TasStateManager.Settings = old.TasStateManager.Settings;
@@ -216,8 +219,7 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 				}
 			}
 
-			TasMovie tas = new TasMovie(newFilename, true);
-			tas.SaveRam = saveRam;
+			var tas = new TasMovie(newFilename, true) { SaveRam = saveRam };
 			tas.TasStateManager.Clear();
 			tas.ClearLagLog();
 
@@ -281,9 +283,9 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 				movie.GameName = "NULL";
 			}
 
-			if (Global.Emulator.BoardName != null)
+			if (Global.Emulator.HasBoardInfo())
 			{
-				movie.BoardName = Global.Emulator.BoardName;
+				movie.BoardName = Global.Emulator.AsBoardInfo().BoardName;
 			}
 
 			if (Global.Emulator.HasRegions())
@@ -306,7 +308,6 @@ namespace BizHawk.Client.Common.MovieConversionExtensions
 						movie.HeaderEntries.Add(key, firmware.Hash);
 					}
 				}
-
 			}
 
 			if (Global.Emulator is Gameboy && (Global.Emulator as Gameboy).IsCGBMode())

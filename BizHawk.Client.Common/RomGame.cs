@@ -9,16 +9,21 @@ namespace BizHawk.Client.Common
 {
 	public class RomGame
 	{
-		public byte[] RomData { get; set; }
-		public byte[] FileData { get; set; }
-		public GameInfo GameInfo { get; set; }
-		public string Extension { get; set; }
+		public byte[] RomData { get; }
+		public byte[] FileData { get; }
+		public GameInfo GameInfo { get; }
+		public string Extension { get; }
 
 		private const int BankSize = 1024;
 
-		public RomGame() { }
+		public RomGame()
+		{
+		}
 
-		public RomGame(HawkFile file) : this(file, null) { }
+		public RomGame(HawkFile file)
+			: this(file, null)
+		{
+		}
 
 		public RomGame(HawkFile file, string patch)
 		{
@@ -101,7 +106,6 @@ namespace BizHawk.Client.Common
 		{
 			// SMD files are interleaved in pages of 16k, with the first 8k containing all 
 			// odd bytes and the second 8k containing all even bytes.
-
 			int size = source.Length;
 			if (size > 0x400000)
 			{
@@ -119,10 +123,11 @@ namespace BizHawk.Client.Common
 					output[(page * 0x4000) + (i * 2) + 1] = source[(page * 0x4000) + 0x0000 + i];
 				}
 			}
+
 			return output;
 		}
 
-		private unsafe static byte[] MutateSwapN64(byte[] source)
+		private static unsafe byte[] MutateSwapN64(byte[] source)
 		{
 			// N64 roms are in one of the following formats:
 			//  .Z64 = No swapping
@@ -154,7 +159,6 @@ namespace BizHawk.Client.Common
 						// output[i + 3] = source[i];
 						// output[i + 1] = source[i + 2];
 						// output[i + 2] = source[i + 1];
-
 						byte temp = pSource[i];
 						pSource[i] = source[i + 3];
 						pSource[i + 3] = temp;
@@ -188,7 +192,10 @@ namespace BizHawk.Client.Common
 					}
 				}
 			}
-			catch (Exception) { } // No need for errors in patching to propagate.
+			catch (Exception)
+			{
+				// No need for errors in patching to propagate.
+			}
 		}
 	}
 }

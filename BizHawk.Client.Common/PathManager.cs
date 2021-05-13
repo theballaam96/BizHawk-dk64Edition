@@ -3,7 +3,6 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 
-using BizHawk.Common;
 using BizHawk.Common.StringExtensions;
 using BizHawk.Emulation.Common;
 using BizHawk.Emulation.Common.IEmulatorExtensions;
@@ -25,27 +24,26 @@ namespace BizHawk.Client.Common
 		}
 
 		/// <summary>
-		/// Makes a path relative to the %exe% dir
+		/// Makes a path relative to the %exe% directory
 		/// </summary>
-		public static string MakeProgramRelativePath(string path) { return MakeAbsolutePath("%exe%/" + path, null); }
+		public static string MakeProgramRelativePath(string path)
+		{
+			return MakeAbsolutePath("%exe%/" + path, null);
+		}
 
-		public static string GetDllDirectory() { return Path.Combine(GetExeDirectoryAbsolute(), "dll"); }
+		public static string GetDllDirectory()
+		{
+			return Path.Combine(GetExeDirectoryAbsolute(), "dll");
+		}
 
 		/// <summary>
 		/// The location of the default INI file
 		/// </summary>
-		public static string DefaultIniPath
-		{
-			get
-			{
-				return MakeProgramRelativePath("config.ini");
-			}
-		}
+		public static string DefaultIniPath => MakeProgramRelativePath("config.ini");
 
 		/// <summary>
 		/// Gets absolute base as derived from EXE
 		/// </summary>
-		/// <returns></returns>
 		public static string GetBasePathAbsolute()
 		{
 			if (Global.Config.PathEntries.GlobalBaseFragment.Length < 1) // If empty, then EXE path
@@ -105,7 +103,6 @@ namespace BizHawk.Client.Common
 			}
 
 			// This function translates relative path and special identifiers in absolute paths
-
 			if (path.Length < 1)
 			{
 				return GetBasePathAbsolute();
@@ -183,10 +180,10 @@ namespace BizHawk.Client.Common
 				int z = workingpath.HowMany("\\");
 				if (y >= z)
 				{
-					//Return drive letter only, working path must be absolute?
+					// Return drive letter only, working path must be absolute?
 				}
 
-				return string.Empty;
+				return "";
 			}
 
 			return path;
@@ -225,14 +222,14 @@ namespace BizHawk.Client.Common
 			return false;
 		}
 
-		public static string GetRomsPath(string sysID)
+		public static string GetRomsPath(string sysId)
 		{
 			if (Global.Config.UseRecentForROMs)
 			{
 				return Environment.SpecialFolder.Recent.ToString();
 			}
 
-			var path = Global.Config.PathEntries[sysID, "ROM"];
+			var path = Global.Config.PathEntries[sysId, "ROM"];
 
 			if (path == null || !PathIsSet(path.Path))
 			{
@@ -244,14 +241,14 @@ namespace BizHawk.Client.Common
 				}
 			}
 
-			return MakeAbsolutePath(path.Path, sysID);
+			return MakeAbsolutePath(path.Path, sysId);
 		}
 
 		public static string RemoveInvalidFileSystemChars(string name)
 		{
 			var newStr = name;
 			var chars = Path.GetInvalidFileNameChars();
-			return chars.Aggregate(newStr, (current, c) => current.Replace(c.ToString(), string.Empty));
+			return chars.Aggregate(newStr, (current, c) => current.Replace(c.ToString(), ""));
 		}
 
 		public static string FilesystemSafeName(GameInfo game)
@@ -297,10 +294,13 @@ namespace BizHawk.Client.Common
 
 		public static string RetroSaveRAMDirectory(GameInfo game)
 		{
-			//hijinx here to get the core name out of the game name
+			// hijinx here to get the core name out of the game name
 			var name = FilesystemSafeName(game);
 			name = Path.GetDirectoryName(name);
-			if (name == "") name = FilesystemSafeName(game);
+			if (name == "")
+			{
+				name = FilesystemSafeName(game);
+			}
 
 			if (Global.MovieSession.Movie.IsActive)
 			{
@@ -313,13 +313,15 @@ namespace BizHawk.Client.Common
 			return Path.Combine(MakeAbsolutePath(pathEntry.Path, game.System), name);
 		}
 
-
 		public static string RetroSystemPath(GameInfo game)
 		{
-			//hijinx here to get the core name out of the game name
+			// hijinx here to get the core name out of the game name
 			var name = FilesystemSafeName(game);
 			name = Path.GetDirectoryName(name);
-			if(name == "") name = FilesystemSafeName(game);
+			if (name == "")
+			{
+				name = FilesystemSafeName(game);
+			}
 
 			var pathEntry = Global.Config.PathEntries[game.System, "System"] ??
 							Global.Config.PathEntries[game.System, "Base"];
@@ -385,7 +387,7 @@ namespace BizHawk.Client.Common
 
 		public static string GetPathType(string system, string type)
 		{
-			var path = PathManager.GetPathEntryWithFallback(type, system).Path;
+			var path = GetPathEntryWithFallback(type, system).Path;
 			return MakeAbsolutePath(path, system);
 		}
 
@@ -403,9 +405,6 @@ namespace BizHawk.Client.Common
 		/// Takes an absolute path and attempts to convert it to a relative, based on the system, 
 		/// or global base if no system is supplied, if it is not a subfolder of the base, it will return the path unaltered
 		/// </summary>
-		/// <param name="absolutePath"></param>
-		/// <param name="system"></param>
-		/// <returns></returns>
 		public static string TryMakeRelative(string absolutePath, string system = null)
 		{
 			var parentPath = string.IsNullOrWhiteSpace(system) ?
@@ -430,8 +429,8 @@ namespace BizHawk.Client.Common
 			return absolutePath;
 		}
 
-		//http://stackoverflow.com/questions/3525775/how-to-check-if-directory-1-is-a-subdirectory-of-dir2-and-vice-versa
-		public static bool IsSubfolder(string parentPath, string childPath)
+		// http://stackoverflow.com/questions/3525775/how-to-check-if-directory-1-is-a-subdirectory-of-dir2-and-vice-versa
+		private static bool IsSubfolder(string parentPath, string childPath)
 		{
 			var parentUri = new Uri(parentPath);
 
@@ -454,14 +453,12 @@ namespace BizHawk.Client.Common
 		/// Don't only valid system ids to system ID, pathType is ROM, Screenshot, etc
 		/// Returns the desired path, if does not exist, returns platform base, else it returns base
 		/// </summary>
-		/// <param name="pathType"></param>
-		/// <param name="systemID"></param>
-		public static PathEntry GetPathEntryWithFallback(string pathType, string systemID)
+		private static PathEntry GetPathEntryWithFallback(string pathType, string systemId)
 		{
-			var entry = Global.Config.PathEntries[systemID, pathType];
+			var entry = Global.Config.PathEntries[systemId, pathType];
 			if (entry == null)
 			{
-				entry = Global.Config.PathEntries[systemID, "Base"];
+				entry = Global.Config.PathEntries[systemId, "Base"];
 			}
 
 			if (entry == null)

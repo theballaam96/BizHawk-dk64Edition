@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -19,7 +18,7 @@ namespace BizHawk.Client.EmuHawk
 
 		private void ColecoControllerSettings_Load(object sender, EventArgs e)
 		{
-			_syncSettings = (Global.Emulator as ColecoVision)._syncSettings.Clone();
+			_syncSettings = ((ColecoVision)Global.Emulator).GetSyncSettings().Clone();
 
 			var possibleControllers = ColecoVisionControllerDeck.ValidControllerTypes.Select(t => t.Key);
 

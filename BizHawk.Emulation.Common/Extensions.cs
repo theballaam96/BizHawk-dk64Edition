@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using BizHawk.Common.ReflectionExtensions;
 using System.Runtime.CompilerServices;
 
 namespace BizHawk.Emulation.Common.IEmulatorExtensions
@@ -37,8 +36,6 @@ namespace BizHawk.Emulation.Common.IEmulatorExtensions
 		/// <summary>
 		/// Returns the core's VideoProvider, or a suitable dummy provider
 		/// </summary>
-		/// <param name="core"></param>
-		/// <returns></returns>
 		public static IVideoProvider AsVideoProviderOrDefault(this IEmulator core)
 		{
 			return core.ServiceProvider.GetService<IVideoProvider>()
@@ -67,10 +64,8 @@ namespace BizHawk.Emulation.Common.IEmulatorExtensions
 		/// </summary>
 		public static ISoundProvider AsSoundProviderOrDefault(this IEmulator core)
 		{
-			var ret = core.ServiceProvider.GetService<ISoundProvider>();
-			if (ret == null)
-				ret = CachedNullSoundProviders.GetValue(core, e => new NullSound(e.CoreComm.VsyncNum, e.CoreComm.VsyncDen));
-			return ret;
+			return core.ServiceProvider.GetService<ISoundProvider>()
+				?? CachedNullSoundProviders.GetValue(core, e => new NullSound(core.VsyncNumerator(), core.VsyncDenominator()));
 		}
 
 		public static bool HasMemoryDomains(this IEmulator core)
@@ -267,9 +262,8 @@ namespace BizHawk.Emulation.Common.IEmulatorExtensions
 			{
 				return false;
 			}
-			
-			//once upon a time, we did a try { poke(peek) } here, but that was before Writable was added. the poke(peek) is not acceptable. If there are further problems, make sure Writable is correct.
 
+			// once upon a time, we did a try { poke(peek) } here, but that was before Writable was added. the poke(peek) is not acceptable. If there are further problems, make sure Writable is correct.
 			return true;
 		}
 
@@ -333,6 +327,46 @@ namespace BizHawk.Emulation.Common.IEmulatorExtensions
 			return core.ServiceProvider.GetService<ICreateGameDBEntries>();
 		}
 
+		public static bool HasBoardInfo(this IEmulator core)
+		{
+			if (core == null)
+			{
+				return false;
+			}
+
+			return core.ServiceProvider.HasService<IBoardInfo>();
+		}
+
+		public static IBoardInfo AsBoardInfo(this IEmulator core)
+		{
+			return core.ServiceProvider.GetService<IBoardInfo>();
+		}
+
+		public static int VsyncNumerator(this IEmulator core)
+		{
+			if (core != null && core.HasVideoProvider())
+			{
+				return core.AsVideoProvider().VsyncNumerator;
+			}
+
+			return 60;
+		}
+
+		public static int VsyncDenominator(this IEmulator core)
+		{
+			if (core != null && core.HasVideoProvider())
+			{
+				return core.AsVideoProvider().VsyncDenominator;
+			}
+
+			return 1;
+		}
+
+		public static double VsyncRate(this IEmulator core)
+		{
+			return core.VsyncNumerator() / (double)core.VsyncDenominator();
+		}
+
 		// TODO: a better place for these
 		public static bool IsImplemented(this MethodInfo info)
 		{
@@ -347,7 +381,7 @@ namespace BizHawk.Emulation.Common.IEmulatorExtensions
 			// If async is not provided by the implementation this method will throw an exception
 			// We need to figure out a reliable way to check specifically for a NotImplementedException, then maybe this method will be more useful
 			// If a method is not marked but all it does is throw an exception, consider it not implemented
-			//return !info.ThrowsError();
+			////return !info.ThrowsError();
 
 			return true;
 		}

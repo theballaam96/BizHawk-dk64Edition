@@ -4,27 +4,24 @@ using System.ComponentModel;
 using System.Linq;
 
 using BizHawk.Common;
-using BizHawk.Common.ReflectionExtensions;
 using BizHawk.Emulation.Common;
 
 namespace BizHawk.Emulation.Cores.ColecoVision
 {
 	/// <summary>
-	/// Represents a controller plugged into a controller port on the intellivision
+	/// Represents a controller plugged into a controller port on the Colecovision
 	/// </summary>
-	/// 
 	public interface IPort
 	{
-		byte Read(IController c, bool left_mode, int wheel);
+		byte Read(IController c, bool leftMode, int wheel);
 
-		int Update_Wheel(IController c, int wheel);
+		int UpdateWheel(IController c, int wheel);
 
 		ControllerDefinition Definition { get; }
 
 		void SyncState(Serializer ser);
 
 		int PortNum { get; }
-
 	}
 
 	[DisplayName("Unplugged Controller")]
@@ -44,16 +41,16 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			return 0; // needs checking
 		}
 
-		public ControllerDefinition Definition { get; private set; }
+		public ControllerDefinition Definition { get; }
 
 		public void SyncState(Serializer ser)
 		{
 			// Do nothing
 		}
 
-		public int PortNum { get; private set; }
+		public int PortNum { get; }
 
-		public int Update_Wheel(IController c, int wheel)
+		public int UpdateWheel(IController c, int wheel)
 		{
 			return 0;
 		}
@@ -73,11 +70,11 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			};
 		}
 
-		public int PortNum { get; private set; }
+		public int PortNum { get; }
 
-		public byte Read(IController c, bool left_mode, int wheel)
+		public byte Read(IController c, bool leftMode, int wheel)
 		{
-			if (left_mode)
+			if (leftMode)
 			{
 				byte retval = 0x7F;
 				if (c.IsPressed(Definition.BoolButtons[0])) retval &= 0xFE;
@@ -112,7 +109,7 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			}
 		}
 
-		public ControllerDefinition Definition { get; private set; }
+		public ControllerDefinition Definition { get; }
 
 
 		public void SyncState(Serializer ser)
@@ -127,7 +124,7 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			"Key 6", "Key 7", "Key 8", "Key 9", "Pound", "Star"
 		};
 
-		public int Update_Wheel(IController c, int wheel)
+		public int UpdateWheel(IController c, int wheel)
 		{
 			return 0;
 		}
@@ -149,13 +146,13 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			};
 		}
 
-		public int PortNum { get; private set; }
+		public int PortNum { get; }
 
-		public ControllerDefinition Definition { get; private set; }
+		public ControllerDefinition Definition { get; }
 
-		public byte Read(IController c, bool left_mode, int wheel)
+		public byte Read(IController c, bool leftMode, int wheel)
 		{
-			if (left_mode)
+			if (leftMode)
 			{
 				byte retval = 0x4B;
 				
@@ -166,7 +163,8 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 				retval |= CalcDirection(x, y);
 				
 				return retval;
-			} else
+			}
+			else
 			{
 				byte retval = 0x4B;
 				if (c.IsPressed(Definition.BoolButtons[0])) retval &= 0x3F;
@@ -197,21 +195,29 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			y = -y; // vflip to match the arrangement of FloatControllerButtons
 
 			if (y >= 0 && x > 0)
+			{
 				return 0x10;
+			}
+
 			if (y >= 0 && x <= 0)
+			{
 				return 0x30;
+			}
 			if (y < 0 && x <= 0)
+			{
 				return 0x20;
+			}
+
 			if (y < 0 && x > 0)
+			{
 				return 0x00;
+			}
 
 			Console.WriteLine("Error");
 			return 0x1F;
 		}
 
-		//private const int Deadzone = 50;
-
-		public int Update_Wheel(IController c, int wheel)
+		public int UpdateWheel(IController c, int wheel)
 		{
 			return 0;
 		}
@@ -232,8 +238,6 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 				FloatRanges = { new[] { -360.0f, 0, 360.0f }}
 			};
 		}
-
-		public int wheel_state { get; set; }
 
 		public int PortNum { get; private set; }
 
@@ -302,20 +306,29 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			byte retval = 0;
 
 			if (wheel >= 0 && wheel < 180)
+			{
 				retval = 0x00;
+			}
+
 			if (wheel >= 180 && wheel < 360)
+			{
 				retval = 0x10;
-			if (wheel <0 && wheel > -180)
+			}
+
+			if (wheel < 0 && wheel > -180)
+			{
 				retval = 0x20;
-			if (wheel <= -180 && wheel >-360)
+			}
+
+			if (wheel <= -180 && wheel > -360)
+			{
 				retval = 0x30;
+			}
 
 			return retval;
 		}
 
-		//private const int Deadzone = 50;
-
-		public int Update_Wheel(IController c, int wheel)
+		public int UpdateWheel(IController c, int wheel)
 		{
 			int x = (int)c.GetFloat(Definition.FloatControls[0]);
 
@@ -324,10 +337,14 @@ namespace BizHawk.Emulation.Cores.ColecoVision
 			wheel += diff;
 
 			if (wheel >= 360)
+			{
 				wheel = wheel - 360;
+			}
 
 			if (wheel <= -360)
+			{
 				wheel = wheel + 360;
+			}
 
 			return wheel;
 		}

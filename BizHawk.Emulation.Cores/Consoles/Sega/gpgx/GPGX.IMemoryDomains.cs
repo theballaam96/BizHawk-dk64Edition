@@ -45,10 +45,14 @@ namespace BizHawk.Emulation.Cores.Consoles.Sega.gpgx
 				{
 					// TODO: are the Z80 domains really Swap16 in the core?  Check this
 					//var byteSize = name.Contains("Z80") ? 1 : 2;
-					mm.Add(MemoryDomain.FromIntPtrSwap16(name, size,
-						MemoryDomain.Endian.Big, area, name != "MD CART" && name != "CD BOOT ROM"));
+					mm.Add(new MemoryDomainIntPtrSwap16(name, MemoryDomain.Endian.Big, area, size, name != "MD CART" && name != "CD BOOT ROM"));
 				}
 			}
+
+			//it's gross for this not to be the full 32bits.
+			//Uhh I mean, I guess the bus is physically smaller.. but the cpu's view of it is larger...
+			//So... I guess no matter what we do, some badness will propagate. This is probably least bad.
+			//Anyway, the disassembler, for instance, must have been masked down to size, since code can run from FFxxxxxxxx...
 			var m68Bus = new MemoryDomainDelegate("M68K BUS", 0x1000000, MemoryDomain.Endian.Big,
 				delegate (long addr)
 				{

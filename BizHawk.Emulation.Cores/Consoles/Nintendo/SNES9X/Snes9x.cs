@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using BizHawk.Common;
-using BizHawk.Common.BufferExtensions;
 using BizHawk.Emulation.Common;
 
 namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
@@ -12,21 +7,6 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
 	[ServiceNotApplicable(typeof(IDriveLight))]
 	public class Snes9x : IEmulator, IVideoProvider, ISoundProvider
 	{
-		#region controller
-
-		public ControllerDefinition ControllerDefinition
-		{
-			get { return NullController.Instance.Definition; }
-		}
-
-		public IController Controller { get; set; }
-
-		#endregion
-
-		public void Dispose()
-		{
-		}
-
 		[CoreConstructor("SNES")]
 		public Snes9x(CoreComm comm, byte[] rom)
 		{
@@ -37,9 +17,22 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
 			CoreComm = comm;
 		}
 
+		#region controller
+
+		public ControllerDefinition ControllerDefinition
+		{
+			get { return NullController.Instance.Definition; }
+		}
+
+		#endregion
+
+		public void Dispose()
+		{
+		}
+
 		public IEmulatorServiceProvider ServiceProvider { get; private set; }
 
-		public void FrameAdvance(bool render, bool rendersound = true)
+		public void FrameAdvance(IController controller, bool render, bool rendersound = true)
 		{
 			Frame++;
 
@@ -55,7 +48,6 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
 
 		public string SystemId { get { return "SNES"; } }
 		public bool DeterministicEmulation { get { return true; } }
-		public string BoardName { get { return null; } }
 		public CoreComm CoreComm { get; private set; }
 
 		#region IVideoProvider
@@ -68,6 +60,24 @@ namespace BizHawk.Emulation.Cores.Nintendo.SNES9X
 		public int BufferWidth { get { return 256; } }
 		public int BufferHeight { get { return 224; } }
 		public int BackgroundColor { get { return unchecked((int)0xff000000); } }
+
+		public int VsyncNumerator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncNum;
+			}
+		}
+
+		public int VsyncDenominator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncDen;
+			}
+		}
 
 		#endregion
 

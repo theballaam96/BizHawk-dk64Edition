@@ -11,15 +11,10 @@ namespace BizHawk.Client.Common
 	/// </summary>
 	public class UD_LR_ControllerAdapter : IController
 	{
-		public ControllerDefinition Definition
-		{
-			get { return Source.Definition; }
-		}
+		public ControllerDefinition Definition => Source.Definition;
 
 		public bool IsPressed(string button)
 		{
-			bool PriorityUD_LR = !Global.Config.AllowUD_LR && !Global.Config.ForbidUD_LR; // implied by neither of the others being set (left as non-enum for back-compatibility)
-
 			if (Global.Config.AllowUD_LR)
 			{
 				return Source.IsPressed(button);
@@ -27,22 +22,20 @@ namespace BizHawk.Client.Common
 
 			string prefix;
 
-			//" C " is for N64 "P1 C Up" and the like, which should not be subject to mutexing
-
-			//regarding the unpressing and UDLR logic...... don't think about it. don't question it. don't look at it.
-
+			// " C " is for N64 "P1 C Up" and the like, which should not be subject to mutexing
+			// regarding the unpressing and UDLR logic...... don't think about it. don't question it. don't look at it.
 			if (button.Contains("Down") && !button.Contains(" C "))
 			{
 				if (!Source.IsPressed(button))
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 
 				prefix = button.GetPrecedingString("Down");
 				string other = prefix + "Up";
 				if (Source.IsPressed(other))
 				{
-					if (Unpresses.Contains(button))
+					if (_unpresses.Contains(button))
 					{
 						return false;
 					}
@@ -52,11 +45,11 @@ namespace BizHawk.Client.Common
 						return false;
 					}
 
-					Unpresses.Add(other);
+					_unpresses.Add(other);
 				}
 				else
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 			}
 
@@ -64,14 +57,14 @@ namespace BizHawk.Client.Common
 			{
 				if (!Source.IsPressed(button))
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 
 				prefix = button.GetPrecedingString("Up");
 				string other = prefix + "Down";
 				if (Source.IsPressed(other))
 				{
-					if (Unpresses.Contains(button))
+					if (_unpresses.Contains(button))
 					{
 						return false;
 					}
@@ -81,11 +74,11 @@ namespace BizHawk.Client.Common
 						return false;
 					}
 
-					Unpresses.Add(other);
+					_unpresses.Add(other);
 				}
 				else
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 			}
 
@@ -93,14 +86,14 @@ namespace BizHawk.Client.Common
 			{
 				if (!Source.IsPressed(button))
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 
 				prefix = button.GetPrecedingString("Right");
 				string other = prefix + "Left";
 				if (Source.IsPressed(other))
 				{
-					if (Unpresses.Contains(button))
+					if (_unpresses.Contains(button))
 					{
 						return false;
 					}
@@ -110,11 +103,11 @@ namespace BizHawk.Client.Common
 						return false;
 					}
 
-					Unpresses.Add(other);
+					_unpresses.Add(other);
 				}
 				else
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 			}
 
@@ -122,14 +115,14 @@ namespace BizHawk.Client.Common
 			{
 				if (!Source.IsPressed(button))
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 
 				prefix = button.GetPrecedingString("Left");
 				string other = prefix + "Right";
 				if (Source.IsPressed(other))
 				{
-					if (Unpresses.Contains(button))
+					if (_unpresses.Contains(button))
 					{
 						return false;
 					}
@@ -139,11 +132,11 @@ namespace BizHawk.Client.Common
 						return false;
 					}
 
-					Unpresses.Add(other);
+					_unpresses.Add(other);
 				}
 				else
 				{
-					Unpresses.Remove(button);
+					_unpresses.Remove(button);
 				}
 			}
 
@@ -156,7 +149,7 @@ namespace BizHawk.Client.Common
 			return Source.GetFloat(name);
 		}
 
-		private readonly HashSet<string> Unpresses = new HashSet<string>();
+		private readonly HashSet<string> _unpresses = new HashSet<string>();
 
 		public IController Source { get; set; }
 	}

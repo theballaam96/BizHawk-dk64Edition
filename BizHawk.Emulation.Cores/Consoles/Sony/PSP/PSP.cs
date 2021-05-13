@@ -10,16 +10,40 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 		"hrydgard",
 		isPorted: true,
 		isReleased: false,
-		singleInstance: true
-		)]
+		singleInstance: true)]
 	public class PSP : IEmulator, IVideoProvider, ISoundProvider
 	{
+		public PSP(CoreComm comm, string isopath)
+		{
+			ServiceProvider = new BasicServiceProvider(this);
+			if (attachedcore != null)
+			{
+				attachedcore.Dispose();
+				attachedcore = null;
+			}
+			CoreComm = comm;
+
+			glcontext = CoreComm.RequestGLContext(3, 0, true);
+			CoreComm.ActivateGLContext(glcontext);
+
+			logcallback = new PPSSPPDll.LogCB(LogCallbackFunc);
+
+			bool good = PPSSPPDll.BizInit(isopath, logcallback);
+			LogFlush();
+			if (!good)
+				throw new Exception("PPSSPP Init failed!");
+
+			CoreComm.RomStatusDetails = "It puts the scythe in the chicken or it gets the abyss again!";
+
+			attachedcore = this;
+		}
+
 		public static readonly ControllerDefinition PSPController = new ControllerDefinition
 		{
 			Name = "PSP Controller",
 			BoolButtons =
-			{					
-				"Up", "Down", "Left", "Right", "Select", "Start", "L", "R", "Square", "Triangle", "Circle", "Cross", 
+			{
+				"Up", "Down", "Left", "Right", "Select", "Start", "L", "R", "Square", "Triangle", "Circle", "Cross",
 				"Menu", "Back",
 				"Power"
 			},
@@ -39,12 +63,9 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 		};
 
 		public ControllerDefinition ControllerDefinition { get { return PSPController; } }
-		public IController Controller { get; set; }
 		public bool DeterministicEmulation { get { return true; } }
 		public string SystemId { get { return "PSP"; } }
 		public CoreComm CoreComm { get; private set; }
-
-		public string BoardName { get { return null; } }
 
 		PPSSPPDll.LogCB logcallback = null;
 		Queue<string> debugmsgs = new Queue<string>();
@@ -66,33 +87,6 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 		static PSP attachedcore = null;
 		object glcontext;
 
-		public PSP(CoreComm comm, string isopath)
-		{
-			ServiceProvider = new BasicServiceProvider(this);
-			if (attachedcore != null)
-			{
-				attachedcore.Dispose();
-				attachedcore = null;
-			}
-			CoreComm = comm;
-
-			glcontext = CoreComm.RequestGLContext(3, 0, true);
-			CoreComm.ActivateGLContext(glcontext);
-
-			logcallback = new PPSSPPDll.LogCB(LogCallbackFunc);
-
-			bool good = PPSSPPDll.BizInit(isopath, logcallback);
-			LogFlush();
-			if (!good)
-				throw new Exception("PPSSPP Init failed!");
-
-			CoreComm.VsyncDen = 1;
-			CoreComm.VsyncNum = 60;
-			CoreComm.RomStatusDetails = "It puts the scythe in the chicken or it gets the abyss again!";
-
-			attachedcore = this;
-		}
-
 		public IEmulatorServiceProvider ServiceProvider { get; private set; }
 
 		public void Dispose()
@@ -108,10 +102,9 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 			}
 		}
 
-		private void UpdateInput()
+		private void UpdateInput(IController c)
 		{
 			PPSSPPDll.Buttons b = 0;
-			var c = Controller;
 			if (c.IsPressed("Up")) b |= PPSSPPDll.Buttons.UP;
 			if (c.IsPressed("Down")) b |= PPSSPPDll.Buttons.DOWN;
 			if (c.IsPressed("Left")) b |= PPSSPPDll.Buttons.LEFT;
@@ -138,10 +131,10 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 		}
 
 
-		public void FrameAdvance(bool render, bool rendersound = true)
+		public void FrameAdvance(IController controller, bool render, bool rendersound = true)
 		{
 			Frame++;
-			UpdateInput();
+			UpdateInput(controller);
 			PPSSPPDll.BizAdvance(screenbuffer, input);
 
 			// problem 1: audio can be 48khz, if a particular core parameter is set.  we're not accounting for that.
@@ -176,6 +169,24 @@ namespace BizHawk.Emulation.Cores.Sony.PSP
 		public int BufferWidth { get { return screenwidth; } }
 		public int BufferHeight { get { return screenheight; } }
 		public int BackgroundColor { get { return unchecked((int)0xff000000); } }
+
+		public int VsyncNumerator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncNum;
+			}
+		}
+
+		public int VsyncDenominator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncDen;
+			}
+		}
 
 		readonly short[] audiobuffer = new short[2048 * 2];
 		int nsampavail = 0;

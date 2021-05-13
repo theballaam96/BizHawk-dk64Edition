@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
-using System.IO;
-using System.ComponentModel;
 
-using BizHawk.Common;
-using BizHawk.Common.BufferExtensions;
 using BizHawk.Emulation.Common;
 using BizHawk.Emulation.DiscSystem;
-
-using Newtonsoft.Json;
 
 namespace BizHawk.Emulation.Cores.Sega.Saturn
 {
@@ -22,16 +13,44 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 		isReleased: true,
 		portedVersion: "9.12",
 		portedUrl: "http://yabause.org",
-		singleInstance: true
-		)]
+		singleInstance: true)]
 	public partial class Yabause : IEmulator, IVideoProvider, ISoundProvider, ISaveRam, IStatable, IInputPollable,
 		ISettable<object, Yabause.SaturnSyncSettings>, IDriveLight
 	{
+		public Yabause(CoreComm coreComm, Disc cd, object syncSettings)
+		{
+			ServiceProvider = new BasicServiceProvider(this);
+			byte[] bios = coreComm.CoreFileProvider.GetFirmware("SAT", "J", true, "Saturn BIOS is required.");
+			coreComm.RomStatusDetails = string.Format("Disk partial hash:{0}", new DiscHasher(cd).OldHash());
+			CoreComm = coreComm;
+			CD = cd;
+			DiscSectorReader = new DiscSectorReader(cd);
+
+			SyncSettings = (SaturnSyncSettings)syncSettings ?? new SaturnSyncSettings();
+
+			if (SyncSettings.UseGL && glContext == null)
+			{
+				glContext = coreComm.RequestGLContext(2,0,false);
+			}
+
+			ResetCounters();
+
+			ActivateGL();
+			Init(bios);
+
+			InputCallbackH = new LibYabause.InputCallback(() => InputCallbacks.Call());
+			LibYabause.libyabause_setinputcallback(InputCallbackH);
+			ConnectTracer();
+			DriveLightEnabled = true;
+
+			DeactivateGL();
+		}
+
 		public static ControllerDefinition SaturnController = new ControllerDefinition
 		{
 			Name = "Saturn Controller",
 			BoolButtons =
-			{	
+			{
 				"Power", "Reset",
 				"P1 Up", "P1 Down", "P1 Left", "P1 Right", "P1 Start", "P1 A", "P1 B", "P1 C", "P1 X", "P1 Y", "P1 Z", "P1 L", "P1 R",
 				"P2 Up", "P2 Down", "P2 Left", "P2 Right", "P2 Start", "P2 A", "P2 B", "P2 C", "P2 X", "P2 Y", "P2 Z", "P2 L", "P2 R",
@@ -55,35 +74,6 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 		LibYabause.CDInterface.ReadAheadFAD ReadAheadFADH;
 
 		LibYabause.InputCallback InputCallbackH;
-
-		public Yabause(CoreComm CoreComm, DiscSystem.Disc CD, object syncSettings)
-		{
-			ServiceProvider = new BasicServiceProvider(this);
-			byte[] bios = CoreComm.CoreFileProvider.GetFirmware("SAT", "J", true, "Saturn BIOS is required.");
-			CoreComm.RomStatusDetails = string.Format("Disk partial hash:{0}", new DiscSystem.DiscHasher(CD).OldHash());
-			this.CoreComm = CoreComm;
-			this.CD = CD;
-			DiscSectorReader = new DiscSystem.DiscSectorReader(CD);
-
-			SyncSettings = (SaturnSyncSettings)syncSettings ?? new SaturnSyncSettings();
-
-			if (this.SyncSettings.UseGL && glContext == null)
-			{
-				glContext = CoreComm.RequestGLContext(2,0,false);
-			}
-
-			ResetCounters();
-
-			ActivateGL();
-			Init(bios);
-
-			InputCallbackH = new LibYabause.InputCallback(() => InputCallbacks.Call());
-			LibYabause.libyabause_setinputcallback(InputCallbackH);
-			ConnectTracer();
-			DriveLightEnabled = true;
-
-			DeactivateGL();
-		}
 
 		public IEmulatorServiceProvider ServiceProvider { get; private set; }
 
@@ -167,8 +157,6 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 			get { return SaturnController; }
 		}
 
-		public IController Controller { get; set; }
-
 		public bool GLMode { get; private set; }
 
 		public void SetGLRes(int factor, int width, int height)
@@ -203,7 +191,7 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 				LibYabause.libyabause_glresize(width, height);
 		}
 
-		public void FrameAdvance(bool render, bool rendersound = true)
+		public void FrameAdvance(IController controller, bool render, bool rendersound = true)
 		{
 			int w, h, nsamp;
 
@@ -214,64 +202,64 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 			LibYabause.Buttons1 p21 = (LibYabause.Buttons1)0xff;
 			LibYabause.Buttons2 p22 = (LibYabause.Buttons2)0xff;
 
-			if (Controller.IsPressed("P1 A"))
+			if (controller.IsPressed("P1 A"))
 				p11 &= ~LibYabause.Buttons1.A;
-			if (Controller.IsPressed("P1 B"))
+			if (controller.IsPressed("P1 B"))
 				p11 &= ~LibYabause.Buttons1.B;
-			if (Controller.IsPressed("P1 C"))
+			if (controller.IsPressed("P1 C"))
 				p11 &= ~LibYabause.Buttons1.C;
-			if (Controller.IsPressed("P1 Start"))
+			if (controller.IsPressed("P1 Start"))
 				p11 &= ~LibYabause.Buttons1.S;
-			if (Controller.IsPressed("P1 Left"))
+			if (controller.IsPressed("P1 Left"))
 				p11 &= ~LibYabause.Buttons1.L;
-			if (Controller.IsPressed("P1 Right"))
+			if (controller.IsPressed("P1 Right"))
 				p11 &= ~LibYabause.Buttons1.R;
-			if (Controller.IsPressed("P1 Up"))
+			if (controller.IsPressed("P1 Up"))
 				p11 &= ~LibYabause.Buttons1.U;
-			if (Controller.IsPressed("P1 Down"))
+			if (controller.IsPressed("P1 Down"))
 				p11 &= ~LibYabause.Buttons1.D;
-			if (Controller.IsPressed("P1 L"))
+			if (controller.IsPressed("P1 L"))
 				p12 &= ~LibYabause.Buttons2.L;
-			if (Controller.IsPressed("P1 R"))
+			if (controller.IsPressed("P1 R"))
 				p12 &= ~LibYabause.Buttons2.R;
-			if (Controller.IsPressed("P1 X"))
+			if (controller.IsPressed("P1 X"))
 				p12 &= ~LibYabause.Buttons2.X;
-			if (Controller.IsPressed("P1 Y"))
+			if (controller.IsPressed("P1 Y"))
 				p12 &= ~LibYabause.Buttons2.Y;
-			if (Controller.IsPressed("P1 Z"))
+			if (controller.IsPressed("P1 Z"))
 				p12 &= ~LibYabause.Buttons2.Z;
 
-			if (Controller.IsPressed("P2 A"))
+			if (controller.IsPressed("P2 A"))
 				p21 &= ~LibYabause.Buttons1.A;
-			if (Controller.IsPressed("P2 B"))
+			if (controller.IsPressed("P2 B"))
 				p21 &= ~LibYabause.Buttons1.B;
-			if (Controller.IsPressed("P2 C"))
+			if (controller.IsPressed("P2 C"))
 				p21 &= ~LibYabause.Buttons1.C;
-			if (Controller.IsPressed("P2 Start"))
+			if (controller.IsPressed("P2 Start"))
 				p21 &= ~LibYabause.Buttons1.S;
-			if (Controller.IsPressed("P2 Left"))
+			if (controller.IsPressed("P2 Left"))
 				p21 &= ~LibYabause.Buttons1.L;
-			if (Controller.IsPressed("P2 Right"))
+			if (controller.IsPressed("P2 Right"))
 				p21 &= ~LibYabause.Buttons1.R;
-			if (Controller.IsPressed("P2 Up"))
+			if (controller.IsPressed("P2 Up"))
 				p21 &= ~LibYabause.Buttons1.U;
-			if (Controller.IsPressed("P2 Down"))
+			if (controller.IsPressed("P2 Down"))
 				p21 &= ~LibYabause.Buttons1.D;
-			if (Controller.IsPressed("P2 L"))
+			if (controller.IsPressed("P2 L"))
 				p22 &= ~LibYabause.Buttons2.L;
-			if (Controller.IsPressed("P2 R"))
+			if (controller.IsPressed("P2 R"))
 				p22 &= ~LibYabause.Buttons2.R;
-			if (Controller.IsPressed("P2 X"))
+			if (controller.IsPressed("P2 X"))
 				p22 &= ~LibYabause.Buttons2.X;
-			if (Controller.IsPressed("P2 Y"))
+			if (controller.IsPressed("P2 Y"))
 				p22 &= ~LibYabause.Buttons2.Y;
-			if (Controller.IsPressed("P2 Z"))
+			if (controller.IsPressed("P2 Z"))
 				p22 &= ~LibYabause.Buttons2.Z;
 
 
-			if (Controller.IsPressed("Reset"))
+			if (controller.IsPressed("Reset"))
 				LibYabause.libyabause_softreset();
-			if (Controller.IsPressed("Power"))
+			if (controller.IsPressed("Power"))
 				LibYabause.libyabause_hardreset();
 
 			LibYabause.libyabause_setpads(p11, p12, p21, p22);
@@ -301,8 +289,6 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 
 		public string SystemId { get { return "SAT"; } }
 		public bool DeterministicEmulation { get { return true; } }
-
-		public string BoardName { get { return null; } }
 
 		public void ResetCounters()
 		{
@@ -349,6 +335,24 @@ namespace BizHawk.Emulation.Cores.Sega.Saturn
 		public int BufferWidth { get; private set; }
 		public int BufferHeight { get; private set; }
 		public int BackgroundColor { get { return unchecked((int)0xff000000); } }
+
+		public int VsyncNumerator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncNum;
+			}
+		}
+
+		public int VsyncDenominator
+		{
+			[FeatureNotImplemented]
+			get
+			{
+				return NullVideo.DefaultVsyncDen;
+			}
+		}
 
 		#endregion
 
