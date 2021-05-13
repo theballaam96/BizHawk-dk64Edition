@@ -218,7 +218,11 @@ void cheat_apply_cheats(int entry)
             // DK64 Japan
             execute_cheat(0x816170AC, 0x0000, NULL);
             execute_cheat(0x816170AE, 0x0000, NULL);
-        }
+        } else {
+			// DK64 USA - Assumed ROM Hack
+            execute_cheat(0x8161963C, 0x0000, NULL);
+            execute_cheat(0x8161963E, 0x0000, NULL);
+		}
     }
 
     // If game is DK64 Kiosk, apply bone displacement fix
